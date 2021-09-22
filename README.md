@@ -20,7 +20,8 @@ builds:
 ```
 
 ### Launch builds
-Run `dart pub global run budinoh`
+1. Run `dart pub global run budinoh`
+2. See output in `<PROJECT_DIR>/build_output/<ENV_NAME>/<BUILD_FILE>`
 
 ### More settings
 Run `dart pub global run budinoh -help`
