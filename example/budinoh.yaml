@@ -1,0 +1,4 @@
+builds:
+  .env.dev:
+    apk:
+    ipa:

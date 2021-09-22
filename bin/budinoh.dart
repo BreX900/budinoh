@@ -9,7 +9,7 @@ import 'package:queue/queue.dart';
 
 final argsParser = ArgParser()
   ..addOption('settings',
-      abbr: 's', defaultsTo: 'dispenser.yaml', valueHelp: 'Define a yaml file path.')
+      abbr: 's', defaultsTo: 'budinoh.yaml', valueHelp: 'Define a yaml file path.')
   ..addFlag('verbose', abbr: 'v', defaultsTo: false, help: 'Print more logs')
   ..addFlag('apk', defaultsTo: true, negatable: true, help: 'Disable apk build.')
   ..addFlag('appbundle', defaultsTo: true, negatable: true, help: 'Disable appbundle build.')
@@ -158,7 +158,7 @@ Future<void> _buildAndUpload(
   }
 }
 
-Future<DispenserSettings> loadSettings(String settingsPath) async {
+Future<PackageSettings> loadSettings(String settingsPath) async {
   try {
     final settingsFile = File(settingsPath);
 
@@ -173,8 +173,8 @@ Future<DispenserSettings> loadSettings(String settingsPath) async {
   }
 }
 
-DispenserSettings _constructEnvSettingsFromYaml(Map? yamlMap) {
-  return DispenserSettings.fromJson(yamlMap!);
+PackageSettings _constructEnvSettingsFromYaml(Map? yamlMap) {
+  return PackageSettings.fromJson(yamlMap!);
 }
 
 String envName(String env) => env.replaceFirst('.env.', '');

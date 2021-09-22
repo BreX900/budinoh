@@ -4,3 +4,7 @@
 
 # Conventional directory for build output.
 build/
+
+# Idea
+build_all_builds.iml
+.idea/
