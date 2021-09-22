@@ -42,6 +42,7 @@ PackageSettings _$PackageSettingsFromJson(Map json) => $checkedCreate(
       json,
       ($checkedConvert) {
         final val = PackageSettings(
+          defineEnv: $checkedConvert('define_env', (v) => v as String?),
           builds: $checkedConvert(
               'builds',
               (v) => (v as Map).map(
@@ -51,12 +52,22 @@ PackageSettings _$PackageSettingsFromJson(Map json) => $checkedCreate(
         );
         return val;
       },
+      fieldKeyMap: const {'defineEnv': 'define_env'},
     );
 
-Map<String, dynamic> _$PackageSettingsToJson(PackageSettings instance) =>
-    <String, dynamic>{
-      'builds': instance.builds,
-    };
+Map<String, dynamic> _$PackageSettingsToJson(PackageSettings instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('define_env', instance.defineEnv);
+  val['builds'] = instance.builds;
+  return val;
+}
 
 GeneralSettings _$GeneralSettingsFromJson(Map json) => $checkedCreate(
       'GeneralSettings',

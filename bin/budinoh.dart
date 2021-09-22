@@ -90,6 +90,8 @@ class Budinoh {
     }
     Print.spaceInfo('Release notes:\n$releaseNotes');
 
+    final defineEnvFile = await findDefineEnvFile(settings.defineEnv);
+
     // Create output builds directory
     final outputDir = Directory('build_output');
     if (await outputDir.exists()) {
@@ -118,7 +120,7 @@ class Budinoh {
 
       Print.workInfo('$envFile: Initializing project...');
       await buildClient.initProject();
-      final env = await projectClient.readEnv(file: envFile);
+      final env = await projectClient.readEnv(file: envFile, settings: defineEnvFile.path);
 
       final outputEnvDir = Directory(join(outputDir.path, envName(envFile)));
       await outputEnvDir.create();
@@ -140,6 +142,15 @@ class Budinoh {
     Print.workInfo('Wait Distribution...');
     await distributionQueue.onComplete;
     Print.workInfo('Distribution Completed!');
+  }
+
+  Future<File> findDefineEnvFile(String? path) async {
+    if (path != null) return File(path);
+
+    final file = File('define_env.yaml');
+    if (await file.exists()) return file;
+
+    return ToolBox.projectYaml;
   }
 
   Future<File> _build(BuildSettings build, String envFile, String env, Directory outputDir) async {
@@ -200,7 +211,7 @@ class Budinoh {
 }
 
 class ToolBox {
-  final File projectYaml = File('pubspec.yaml');
+  static final File projectYaml = File('pubspec.yaml');
   final File packageYaml;
 
   ToolBox({required String name}) : packageYaml = File('$name.yaml');

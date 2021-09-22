@@ -11,10 +11,13 @@ class ProjectClient {
     String? directory,
   }) : _shell = Shell(workingDirectory: directory);
 
-  Future<String> readEnv({String file = ''}) async {
+  Future<String> readEnv({String file = '', String settings = ''}) async {
     final command = StringBuffer('dart pub global run define_env');
     if (file.isNotEmpty) {
       command.write(' -f $file');
+    }
+    if (settings.isNotEmpty) {
+      command.write(' -s $settings');
     }
 
     final res = await _shell.singleRun(command.toString());

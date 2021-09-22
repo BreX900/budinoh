@@ -31,9 +31,11 @@ class BuildGroupSettings with Stringify {
 
 @JsonSerializable()
 class PackageSettings with Stringify {
+  final String? defineEnv;
   final Map<String, BuildGroupSettings> builds;
 
   const PackageSettings({
+    this.defineEnv,
     required this.builds,
   });
 
