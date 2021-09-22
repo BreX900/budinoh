@@ -6,4 +6,4 @@ export 'src/clients/project_client.dart';
 export 'src/settings/build_settings.dart';
 export 'src/settings/distribution_settings.dart';
 export 'src/settings/package_settings.dart';
-export 'src/stringifiers.dart';
+export 'src/stringify.dart';

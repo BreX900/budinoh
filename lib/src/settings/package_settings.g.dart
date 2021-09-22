@@ -57,3 +57,20 @@ Map<String, dynamic> _$PackageSettingsToJson(PackageSettings instance) =>
     <String, dynamic>{
       'builds': instance.builds,
     };
+
+GeneralSettings _$GeneralSettingsFromJson(Map json) => $checkedCreate(
+      'GeneralSettings',
+      json,
+      ($checkedConvert) {
+        final val = GeneralSettings(
+          budinoh: $checkedConvert(
+              'budinoh', (v) => PackageSettings.fromJson(v as Map)),
+        );
+        return val;
+      },
+    );
+
+Map<String, dynamic> _$GeneralSettingsToJson(GeneralSettings instance) =>
+    <String, dynamic>{
+      'budinoh': instance.budinoh,
+    };

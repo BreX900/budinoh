@@ -219,7 +219,7 @@ packages:
     source: hosted
     version: "4.1.0"
   json_serializable:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: json_serializable
       url: "https://pub.dartlang.org"
@@ -345,7 +345,7 @@ packages:
     source: hosted
     version: "1.0.1"
   source_gen:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: source_gen
       url: "https://pub.dartlang.org"

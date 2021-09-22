@@ -8,11 +8,13 @@ import 'package:process_run/shell.dart';
 class BuildClient {
   final shell = Shell();
 
-  Future<void> init() async {
+  /// Call it every time it starts a build series with all different types
+  Future<void> initProject() async {
     await _flutterClean();
     await _flutterPubGet();
   }
 
+  /// Build apk
   Future<File> buildApk(String envName, String env, Directory outputDir) async {
     await shell.singleRun('flutter build apk --no-pub $env');
 
@@ -22,6 +24,7 @@ class BuildClient {
     return File(buildFile1.path);
   }
 
+  /// Build appbundle
   Future<File> buildAppBundle(String envName, String env, Directory outputDir) async {
     await shell.singleRun('flutter build appbundle --no-pub $env');
 
@@ -31,6 +34,7 @@ class BuildClient {
     return File(buildFile1.path);
   }
 
+  /// Build ipa
   Future<File> buildIpa(
     String envName,
     String env,
@@ -46,7 +50,8 @@ class BuildClient {
     return File(buildFile1.path);
   }
 
-  Future<void> dispose() async {
+  /// Call when all builds is completed
+  Future<void> disposeProject() async {
     await _flutterClean();
     await _flutterPubGet();
   }

@@ -37,7 +37,20 @@ class PackageSettings with Stringify {
     required this.builds,
   });
 
+  static PackageSettings fromYaml(Map map) => GeneralSettings.fromJson(map).budinoh;
+
   factory PackageSettings.fromJson(Map<dynamic, dynamic> map) => _$PackageSettingsFromJson(map);
   @override
   Map<String, dynamic> toJson() => _$PackageSettingsToJson(this);
+}
+
+@JsonSerializable()
+class GeneralSettings with Stringify {
+  final PackageSettings budinoh;
+
+  const GeneralSettings({required this.budinoh});
+
+  factory GeneralSettings.fromJson(Map<dynamic, dynamic> map) => _$GeneralSettingsFromJson(map);
+  @override
+  Map<String, dynamic> toJson() => _$GeneralSettingsToJson(this);
 }

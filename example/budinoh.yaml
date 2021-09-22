@@ -1,31 +1,32 @@
-builds:
-  .env.dev:
-    apk:
-      firebase:
-        app_id: dev_android_firebase_app_id
-        groups:
-          - developers
-    ipa:
-      export_options: _more/ios/dev/ExportOptions.plist
-      firebase:
-        app_id: dev_ios_firebase_app_id
-        groups:
-          - developers
-  .env.demo:
-    apk:
-      firebase:
-        app_id: demo_android_firebase_app_id
-        groups:
-          - developers
-          - testers
-    ipa:
-      export_options: _more/ios/demo/ExportOptions.plist
-      firebase:
-        app_id: demo_ios_firebase_app_id
-        groups:
-          - developers
-          - testers
-  .env.prod:
-    appbundle:
-    ipa:
-      export_options: _more/ios/prod/ExportOptions.plist
+budinoh:
+  builds:
+    .env.dev:
+      apk:
+        firebase:
+          app_id: dev_android_firebase_app_id
+          groups:
+            - developers
+      ipa:
+        export_options: _more/ios/dev/ExportOptions.plist
+        firebase:
+          app_id: dev_ios_firebase_app_id
+          groups:
+            - developers
+    .env.demo:
+      apk:
+        firebase:
+          app_id: demo_android_firebase_app_id
+          groups:
+            - developers
+            - testers
+      ipa:
+        export_options: _more/ios/demo/ExportOptions.plist
+        firebase:
+          app_id: demo_ios_firebase_app_id
+          groups:
+            - developers
+            - testers
+    .env.prod:
+      appbundle:
+      ipa:
+        export_options: _more/ios/prod/ExportOptions.plist

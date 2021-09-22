@@ -1,25 +1,23 @@
 name: budinoh
 description: Automatic build (apk/appbundle/ipa) and upload your project build to Firebase, PlayStore and AppStore.
-version: 0.0.1+1
+version: 0.0.2
 repository: https://github.com/BreX900/budinoh
 issue_tracker: https://github.com/BreX900/budinoh/issues
 
-# dart pub publish
+# dart pub publish --dry-run
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
   args: ^2.3.0
+  console: ^4.1.0
 
   yaml: ^3.1.0
   checked_yaml: ^2.0.1
   json_annotation: ^4.1.0
-  json_serializable: ^5.0.2
-  source_gen: ^1.1.0
 
   path: ^1.8.0
-  console: ^4.1.0
 
   pubspec: ^2.0.1
   process_run: ^0.12.2+1
@@ -32,3 +30,4 @@ dev_dependencies:
   # dart run build_runner build --delete-conflicting-outputs
   # dart run build_runner watch --delete-conflicting-outputs
   build_runner: ^2.1.2
+  json_serializable: ^5.0.2

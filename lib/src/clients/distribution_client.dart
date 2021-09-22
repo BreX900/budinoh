@@ -31,6 +31,7 @@ class DistributionClient {
     await _shell.singleRun(command.toString());
   }
 
+  // TODO: !!!WARNING!!! Not tested
   Future<void> uploadToAppleStore(
     File file, {
     required String username,
