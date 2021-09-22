@@ -1,0 +1,31 @@
+name: budinoh
+description: A simple command-line application.
+version: 0.0.1
+# homepage: https://www.example.com
+
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+
+dependencies:
+  args: ^2.3.0
+
+  yaml: ^3.1.0
+  checked_yaml: ^2.0.1
+  json_annotation: ^4.1.0
+  json_serializable: ^5.0.2
+  source_gen: ^1.1.0
+
+  path: ^1.8.0
+  console: ^4.1.0
+
+  pubspec: ^2.0.1
+  process_run: ^0.12.2+1
+  queue: ^3.1.0
+
+dev_dependencies:
+  lints: ^1.0.1
+
+  # To generate .g files:
+  # dart run build_runner build --delete-conflicting-outputs
+  # dart run build_runner watch --delete-conflicting-outputs
+  build_runner: ^2.1.2
