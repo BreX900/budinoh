@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -46,6 +47,8 @@ class Budinoh {
   final projectClient = ProjectClient();
   final distributionClient = DistributionClient();
   final distributionQueue = Queue();
+  late final StreamSubscription remainingItemsSub;
+  int remainingItems = 0;
 
   final List<String> envNames;
   final bool canBuildApk;
@@ -67,7 +70,11 @@ class Budinoh {
     required this.canDeployAppleStore,
     required this.settingsPath,
     required this.canVerbose,
-  });
+  }) {
+    remainingItemsSub = distributionQueue.remainingItems.listen((event) {
+      remainingItems = event;
+    });
+  }
 
   Future<void> call() async {
     Print.workInfo('Initializing work space...');
@@ -136,12 +143,16 @@ class Budinoh {
       }));
     }
 
-    Print.workInfo('Builds Completed! Cleaning project...');
+    Print.workInfo('Builds Completed!\nCleaning project...');
     await buildClient.disposeProject();
 
-    Print.workInfo('Wait Distribution...');
-    await distributionQueue.onComplete;
-    Print.workInfo('Distribution Completed!');
+    Print.workInfo('Project clean!');
+
+    if (remainingItems > 0) {
+      Print.workInfo('Wait Distribution...');
+      await distributionQueue.onComplete;
+      Print.workInfo('Distribution Completed!');
+    }
   }
 
   Future<File> findDefineEnvFile(String? path) async {

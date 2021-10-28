@@ -30,8 +30,7 @@ class BuildClient {
 
     // Move android build into output dir
     final buildFile = File('build/app/outputs/bundle/release/app-release.aab');
-    final buildFile1 = await buildFile.rename('${outputDir.path}/${basename(buildFile.path)}');
-    return File(buildFile1.path);
+    return await buildFile.rename('${outputDir.path}/${basename(buildFile.path)}');
   }
 
   /// Build ipa

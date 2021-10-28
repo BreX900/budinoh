@@ -1,3 +1,6 @@
+## 0.0.4
+- Fix distribution queue printing
+
 ## 0.0.3
 - Added `define_env` in yaml file to pass a define_env settings file 
 
