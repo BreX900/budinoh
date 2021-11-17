@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:budinoh/budinoh.dart';
 import 'package:checked_yaml/checked_yaml.dart';
+import 'package:collection/collection.dart';
 import 'package:console/console.dart';
 import 'package:path/path.dart';
 import 'package:queue/queue.dart';
@@ -108,11 +109,14 @@ class Budinoh {
     Print.spaceInfo('Output directory: ${outputDir.path}');
 
     // Filter builds
-    var envBuilds = settings.builds.entries;
+    var envBuilds = settings.builds.entries.toList();
     if (envNames.isNotEmpty) {
-      envBuilds = envBuilds.where((build) {
-        return envNames.contains(envName(basename(build.key)));
-      }).toList();
+      envBuilds = envNames
+          .map((name) {
+            return envBuilds.firstWhereOrNull((build) => name == envName(basename(build.key)));
+          })
+          .whereNotNull()
+          .toList();
     }
 
     Print.spaceInfo('Builds: ${envBuilds.map((e) {

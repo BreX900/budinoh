@@ -1,3 +1,6 @@
+## 0.0.5
+- Fix for random ordering of builds
+
 ## 0.0.4
 - Fix distribution queue printing
 
