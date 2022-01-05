@@ -1,3 +1,6 @@
+## 0.0.6
+- Fix reading version on CHANGELOG.md file
+
 ## 0.0.5
 - Fix for random ordering of builds
 

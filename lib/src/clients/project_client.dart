@@ -34,7 +34,7 @@ class ProjectClient {
       line = line.trim();
       if (line.isEmpty) continue;
 
-      final versionMatch = RegExp(r'## (\d\.\d\.\d)').firstMatch(line);
+      final versionMatch = RegExp(r'## (\d+\.\d+\.\d+)').firstMatch(line);
       if (versionMatch != null) {
         _version = versionMatch.group(1)!;
         _versions[_version] = [];
