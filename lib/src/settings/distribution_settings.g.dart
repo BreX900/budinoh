@@ -6,11 +6,15 @@ part of 'distribution_settings.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-FirebaseSettings _$FirebaseSettingsFromJson(Map json) => $checkedCreate(
-      'FirebaseSettings',
+FirebaseCliSettings _$FirebaseCliSettingsFromJson(Map json) => $checkedCreate(
+      'FirebaseCliSettings',
       json,
       ($checkedConvert) {
-        final val = FirebaseSettings(
+        $checkKeys(
+          json,
+          allowedKeys: const ['app_id', 'groups'],
+        );
+        final val = FirebaseCliSettings(
           appId: $checkedConvert('app_id', (v) => v as String),
           groups: $checkedConvert(
               'groups',
@@ -23,44 +27,117 @@ FirebaseSettings _$FirebaseSettingsFromJson(Map json) => $checkedCreate(
       fieldKeyMap: const {'appId': 'app_id'},
     );
 
-Map<String, dynamic> _$FirebaseSettingsToJson(FirebaseSettings instance) =>
+Map<String, dynamic> _$FirebaseCliSettingsToJson(
+        FirebaseCliSettings instance) =>
     <String, dynamic>{
       'app_id': instance.appId,
       'groups': instance.groups,
     };
 
-AppleStoreSettings _$AppleStoreSettingsFromJson(Map json) => $checkedCreate(
-      'AppleStoreSettings',
+FirebaseApiSettings _$FirebaseApiSettingsFromJson(Map json) => $checkedCreate(
+      'FirebaseApiSettings',
       json,
       ($checkedConvert) {
-        final val = AppleStoreSettings(
-          username: $checkedConvert('username', (v) => v as String),
-          password: $checkedConvert('password', (v) => v as String),
+        $checkKeys(
+          json,
+          allowedKeys: const ['credentials', 'app_id', 'groups'],
+        );
+        final val = FirebaseApiSettings(
+          credentials: $checkedConvert('credentials', (v) => v as String?),
+          appId: $checkedConvert('app_id', (v) => v as String),
+          groups: $checkedConvert(
+              'groups',
+              (v) =>
+                  (v as List<dynamic>?)?.map((e) => e as String).toList() ??
+                  const <String>[]),
         );
         return val;
       },
+      fieldKeyMap: const {'appId': 'app_id'},
     );
 
-Map<String, dynamic> _$AppleStoreSettingsToJson(AppleStoreSettings instance) =>
-    <String, dynamic>{
-      'username': instance.username,
-      'password': instance.password,
-    };
+Map<String, dynamic> _$FirebaseApiSettingsToJson(FirebaseApiSettings instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('credentials', instance.credentials);
+  val['app_id'] = instance.appId;
+  val['groups'] = instance.groups;
+  return val;
+}
+
+AppleStoreAppSettings _$AppleStoreAppSettingsFromJson(Map json) =>
+    $checkedCreate(
+      'AppleStoreAppSettings',
+      json,
+      ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['api_issuer', 'api_key_id', 'api_key'],
+        );
+        final val = AppleStoreAppSettings(
+          apiKeyId: $checkedConvert('api_key_id', (v) => v as String),
+          apiIssuer: $checkedConvert('api_issuer', (v) => v as String),
+          apiKey: $checkedConvert('api_key', (v) => v as String?),
+        );
+        return val;
+      },
+      fieldKeyMap: const {
+        'apiKeyId': 'api_key_id',
+        'apiIssuer': 'api_issuer',
+        'apiKey': 'api_key'
+      },
+    );
+
+Map<String, dynamic> _$AppleStoreAppSettingsToJson(
+    AppleStoreAppSettings instance) {
+  final val = <String, dynamic>{
+    'api_issuer': instance.apiIssuer,
+    'api_key_id': instance.apiKeyId,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('api_key', instance.apiKey);
+  return val;
+}
 
 GoogleStoreSettings _$GoogleStoreSettingsFromJson(Map json) => $checkedCreate(
       'GoogleStoreSettings',
       json,
       ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['credentials', 'package_name'],
+        );
         final val = GoogleStoreSettings(
-          apiKey: $checkedConvert('api_key', (v) => v as String),
+          credentials: $checkedConvert('credentials', (v) => v as String?),
+          packageName: $checkedConvert('package_name', (v) => v as String),
         );
         return val;
       },
-      fieldKeyMap: const {'apiKey': 'api_key'},
+      fieldKeyMap: const {'packageName': 'package_name'},
     );
 
-Map<String, dynamic> _$GoogleStoreSettingsToJson(
-        GoogleStoreSettings instance) =>
-    <String, dynamic>{
-      'api_key': instance.apiKey,
-    };
+Map<String, dynamic> _$GoogleStoreSettingsToJson(GoogleStoreSettings instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('credentials', instance.credentials);
+  val['package_name'] = instance.packageName;
+  return val;
+}

@@ -1,32 +1,42 @@
 budinoh:
+  env:
+    prefix: .config.
+    suffix: .json
+  firebase_api_credentials: ./google_service_account.json # Optional
   builds:
-    .env.dev:
+    dev:
       apk:
-        firebase:
+        firebase_cli:
           app_id: dev_android_firebase_app_id
           groups:
             - developers
       ipa:
         export_options: _more/ios/dev/ExportOptions.plist
-        firebase:
+        firebase_cli:
           app_id: dev_ios_firebase_app_id
           groups:
             - developers
-    .env.demo:
+    demo:
       apk:
-        firebase:
+        firebase_api:
           app_id: demo_android_firebase_app_id
           groups:
             - developers
             - testers
       ipa:
         export_options: _more/ios/demo/ExportOptions.plist
-        firebase:
+        firebase_api:
           app_id: demo_ios_firebase_app_id
           groups:
             - developers
             - testers
-    .env.prod:
+    prod:
       appbundle:
+        google_store:
+          package_name: <com.example> # Required
       ipa:
         export_options: _more/ios/prod/ExportOptions.plist
+        apple_store:
+          api_issuer: <APIISSUER> # Required
+          api_key_id: <APIKEYID> # Required
+          api_key_directory: '.' # Optional

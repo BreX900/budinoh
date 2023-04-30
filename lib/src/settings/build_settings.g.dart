@@ -10,11 +10,22 @@ ApkSettings _$ApkSettingsFromJson(Map json) => $checkedCreate(
       'ApkSettings',
       json,
       ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['args', 'firebase_cli', 'firebase_api'],
+        );
         final val = ApkSettings(
-          firebase: $checkedConvert('firebase',
-              (v) => v == null ? null : FirebaseSettings.fromJson(v as Map)),
+          args: $checkedConvert('args', (v) => v as String?),
+          firebaseCli: $checkedConvert('firebase_cli',
+              (v) => v == null ? null : FirebaseCliSettings.fromJson(v as Map)),
+          firebaseApi: $checkedConvert('firebase_api',
+              (v) => v == null ? null : FirebaseApiSettings.fromJson(v as Map)),
         );
         return val;
+      },
+      fieldKeyMap: const {
+        'firebaseCli': 'firebase_cli',
+        'firebaseApi': 'firebase_api'
       },
     );
 
@@ -27,7 +38,9 @@ Map<String, dynamic> _$ApkSettingsToJson(ApkSettings instance) {
     }
   }
 
-  writeNotNull('firebase', instance.firebase);
+  writeNotNull('args', instance.args);
+  writeNotNull('firebase_cli', instance.firebaseCli);
+  writeNotNull('firebase_api', instance.firebaseApi);
   return val;
 }
 
@@ -35,7 +48,12 @@ AppBundleSettings _$AppBundleSettingsFromJson(Map json) => $checkedCreate(
       'AppBundleSettings',
       json,
       ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['args', 'google_store'],
+        );
         final val = AppBundleSettings(
+          args: $checkedConvert('args', (v) => v as String?),
           googleStore: $checkedConvert('google_store',
               (v) => v == null ? null : GoogleStoreSettings.fromJson(v as Map)),
         );
@@ -53,6 +71,7 @@ Map<String, dynamic> _$AppBundleSettingsToJson(AppBundleSettings instance) {
     }
   }
 
+  writeNotNull('args', instance.args);
   writeNotNull('google_store', instance.googleStore);
   return val;
 }
@@ -61,25 +80,40 @@ IpaSettings _$IpaSettingsFromJson(Map json) => $checkedCreate(
       'IpaSettings',
       json,
       ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const [
+            'args',
+            'export_options',
+            'firebase_cli',
+            'firebase_api',
+            'apple_store_app'
+          ],
+        );
         final val = IpaSettings(
-          firebase: $checkedConvert('firebase',
-              (v) => v == null ? null : FirebaseSettings.fromJson(v as Map)),
-          appleStore: $checkedConvert('apple_store',
-              (v) => v == null ? null : AppleStoreSettings.fromJson(v as Map)),
-          exportOptions: $checkedConvert('export_options', (v) => v as String),
+          args: $checkedConvert('args', (v) => v as String?),
+          exportOptions: $checkedConvert('export_options', (v) => v as String?),
+          firebaseCli: $checkedConvert('firebase_cli',
+              (v) => v == null ? null : FirebaseCliSettings.fromJson(v as Map)),
+          firebaseApi: $checkedConvert('firebase_api',
+              (v) => v == null ? null : FirebaseApiSettings.fromJson(v as Map)),
+          appleStoreApp: $checkedConvert(
+              'apple_store_app',
+              (v) =>
+                  v == null ? null : AppleStoreAppSettings.fromJson(v as Map)),
         );
         return val;
       },
       fieldKeyMap: const {
-        'appleStore': 'apple_store',
-        'exportOptions': 'export_options'
+        'exportOptions': 'export_options',
+        'firebaseCli': 'firebase_cli',
+        'firebaseApi': 'firebase_api',
+        'appleStoreApp': 'apple_store_app'
       },
     );
 
 Map<String, dynamic> _$IpaSettingsToJson(IpaSettings instance) {
-  final val = <String, dynamic>{
-    'export_options': instance.exportOptions,
-  };
+  final val = <String, dynamic>{};
 
   void writeNotNull(String key, dynamic value) {
     if (value != null) {
@@ -87,7 +121,10 @@ Map<String, dynamic> _$IpaSettingsToJson(IpaSettings instance) {
     }
   }
 
-  writeNotNull('firebase', instance.firebase);
-  writeNotNull('apple_store', instance.appleStore);
+  writeNotNull('args', instance.args);
+  writeNotNull('export_options', instance.exportOptions);
+  writeNotNull('firebase_cli', instance.firebaseCli);
+  writeNotNull('firebase_api', instance.firebaseApi);
+  writeNotNull('apple_store_app', instance.appleStoreApp);
   return val;
 }

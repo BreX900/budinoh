@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:budinoh/budinoh.dart';
 import 'package:checked_yaml/checked_yaml.dart';
-import 'package:collection/collection.dart';
 import 'package:console/console.dart';
 import 'package:path/path.dart';
 import 'package:queue/queue.dart';
@@ -16,6 +15,19 @@ final argsParser = ArgParser()
   ..addFlag('firebase', defaultsTo: true, negatable: true, help: 'Disable firebase deploy.')
   ..addFlag('google-store', defaultsTo: true, negatable: true, help: 'Disable google store deploy.')
   ..addFlag('apple-store', defaultsTo: true, negatable: true, help: 'Disable apple store deploy.')
+  ..addOption('build-number',
+      help: 'An identifier used as an internal version number.\n'
+          'Each build must have a unique identifier to differentiate it from previous builds.\n'
+          'It is used to determine whether one build is more recent than another, with higher numbers indicating more recent build.\n'
+          'On Android it is used as "versionCode".\n'
+          'On Xcode builds it is used as "CFBundleVersion".\n'
+          'On Windows it is used as the build suffix for the product and file versions.')
+  ..addOption('build-name',
+      help: 'A "x.y.z" string used as the version number shown to users.\n'
+          'For each new version of your app, you will provide a version number to differentiate it from previous versions.\n'
+          'On Android it is used as "versionName".\n'
+          'On Xcode builds it is used as "CFBundleShortVersionString".')
+  ..addFlag('changelog', defaultsTo: false, help: 'Read release version from changelog.')
   ..addOption('settings',
       abbr: 's', defaultsTo: 'budinoh.yaml', valueHelp: 'Define a yaml file path.')
   ..addFlag('verbose', abbr: 'v', defaultsTo: false, help: 'Print more logs')
@@ -31,47 +43,55 @@ void main(List<String> rawArgs) async {
   }
 
   Budinoh(
-    envNames: args.rest,
+    buildNames: args.rest,
     canBuildApk: args['apk'],
     canBuildAppbundle: args['appbundle'],
     canBuildIpa: args['ipa'],
     canDeployFirebase: args['firebase'],
     canDeployGoogleStore: args['google-store'],
     canDeployAppleStore: args['apple-store'],
+    buildNumber: args['build-number'],
+    buildName: args['build-name'],
+    canUseChangelog: args['changelog'],
     settingsPath: args['settings'],
     canVerbose: args['verbose'],
   ).call();
 }
 
 class Budinoh {
-  final buildClient = BuildClient();
   final projectClient = ProjectClient();
   final distributionClient = DistributionClient();
   final distributionQueue = Queue();
   late final StreamSubscription remainingItemsSub;
   int remainingItems = 0;
 
-  final List<String> envNames;
+  final List<String> buildNames;
   final bool canBuildApk;
   final bool canBuildAppbundle;
   final bool canBuildIpa;
   final bool canDeployFirebase;
   final bool canDeployGoogleStore;
   final bool canDeployAppleStore;
+  final bool canUseChangelog;
   final String settingsPath;
   final bool canVerbose;
 
+  final BuildClient buildClient;
+
   Budinoh({
-    required this.envNames,
+    required this.buildNames,
     required this.canBuildApk,
     required this.canBuildAppbundle,
     required this.canBuildIpa,
     required this.canDeployFirebase,
     required this.canDeployGoogleStore,
     required this.canDeployAppleStore,
+    required String? buildNumber,
+    required String? buildName,
+    required this.canUseChangelog,
     required this.settingsPath,
     required this.canVerbose,
-  }) {
+  }) : buildClient = BuildClient(buildName: buildName, buildNumber: buildNumber) {
     remainingItemsSub = distributionQueue.remainingItems.listen((event) {
       remainingItems = event;
     });
@@ -89,16 +109,8 @@ class Budinoh {
     }
 
     // Find release notes for this relase
-    final allReleaseNotes = await projectClient.readReleaseNotes();
-    final projectVersion = await projectClient.readVersion();
-    final releaseNotes = allReleaseNotes[projectVersion];
-    if (releaseNotes == null) {
-      Print.error('Not find Release Notes for "$projectVersion" project version');
-      exit(-1);
-    }
-    Print.spaceInfo('Release notes:\n$releaseNotes');
-
-    final defineEnvFile = await findDefineEnvFile(settings.defineEnv);
+    final projectVersion = buildClient.buildNumber ?? await projectClient.readVersion();
+    final releaseNotes = await _readReleaseNotes(projectVersion: projectVersion);
 
     // Create output builds directory
     final outputDir = Directory('build_output');
@@ -109,46 +121,52 @@ class Budinoh {
     Print.spaceInfo('Output directory: ${outputDir.path}');
 
     // Filter builds
-    var envBuilds = settings.builds.entries.toList();
-    if (envNames.isNotEmpty) {
-      envBuilds = envNames
-          .map((name) {
-            return envBuilds.firstWhereOrNull((build) => name == envName(basename(build.key)));
-          })
-          .whereNotNull()
-          .toList();
-    }
+    final builds =
+        Map.fromEntries((buildNames.isEmpty ? settings.builds.keys : buildNames).map((name) {
+      final buildsSettings = settings.builds[name];
+      if (buildsSettings == null) throw StateError('Unknown build key: $name');
 
-    Print.spaceInfo('Builds: ${envBuilds.map((e) {
-      return '${e.key}(${e.value.builds.map((e) => e.name).join(',')})';
+      final builds = buildsSettings.getBuilds(
+        apk: canBuildApk,
+        appbundle: canBuildAppbundle,
+        ipa: canBuildIpa,
+      );
+      return MapEntry(name, builds);
+    }));
+
+    Print.spaceInfo('($projectVersion) Builds: ${builds.entries.map((e) {
+      return '${e.key}(${e.value.map((e) => e.type).join(',')})';
     }).join(' - ')}');
+
+    await buildClient.cleanAndPubGet();
 
     Print.workInfo('Initialized work space!');
 
-    for (final entry in envBuilds) {
-      final envFile = entry.key;
-      final envBuilds = entry.value;
+    for (final entry in builds.entries) {
+      final buildKey = entry.key;
+      final buildsSettings = entry.value;
 
-      Print.workInfo('$envFile: Initializing project...');
-      await buildClient.initProject();
-      final env = await projectClient.readEnv(file: envFile, settings: defineEnvFile.path);
+      Print.workInfo('Initializing project...');
 
-      final outputEnvDir = Directory(join(outputDir.path, envName(envFile)));
+      final env = await _readEnv(settings, settings.env, buildKey);
+
+      final outputEnvDir = Directory(join(outputDir.path, buildKey));
       await outputEnvDir.create();
 
-      final builds = [
-        if (canBuildApk && envBuilds.apk != null) envBuilds.apk!,
-        if (canBuildAppbundle && envBuilds.appbundle != null) envBuilds.appbundle!,
-        if (canBuildIpa && envBuilds.ipa != null) envBuilds.ipa!,
-      ];
-
-      await Future.wait(builds.map((build) async {
-        return await _buildAndUpload(build, envFile, env, outputEnvDir, releaseNotes);
-      }));
+      for (final buildSettings in buildsSettings) {
+        await _buildAndUpload(
+          settings: settings,
+          env: env,
+          buildKey: buildKey,
+          buildSettings: buildSettings,
+          outputDir: outputEnvDir,
+          releaseNotes: releaseNotes,
+        );
+      }
     }
 
     Print.workInfo('Builds Completed!\nCleaning project...');
-    await buildClient.disposeProject();
+    await buildClient.cleanAndPubGet();
 
     Print.workInfo('Project clean!');
 
@@ -159,70 +177,131 @@ class Budinoh {
     }
   }
 
-  Future<File> findDefineEnvFile(String? path) async {
-    if (path != null) return File(path);
-
-    final file = File('define_env.yaml');
-    if (await file.exists()) return file;
-
-    return ToolBox.projectYaml;
-  }
-
-  Future<File> _build(BuildSettings build, String envFile, String env, Directory outputDir) async {
-    if (build is ApkSettings) {
-      return await buildClient.buildApk(envFile, env, outputDir);
-    } else if (build is AppBundleSettings) {
-      return await buildClient.buildAppBundle(envFile, env, outputDir);
-    } else if (build is IpaSettings) {
-      return await buildClient.buildIpa(envFile, env, outputDir,
-          exportOptions: build.exportOptions);
-    }
-    throw 'Not support';
-  }
-
-  Future<void> _buildAndUpload(
-    BuildSettings build,
-    String envFile,
-    String env,
-    Directory outputDir,
-    String releaseNotes,
+  Future<String?> _readEnv(
+    PackageSettings settings,
+    EnvSettings? envSettings,
+    String buildKey,
   ) async {
-    Print.workInfo('$envFile ${build.name}: Building...');
-    final buildFile = await _build(build, envFile, env, outputDir);
-    Print.workInfo('$envFile ${build.name}: Built!!!');
+    if (envSettings == null) return null;
 
-    final firebase = build.firebase;
-    if (canDeployFirebase && firebase != null) {
+    final envFilePath =
+        '${envSettings.directory}/${envSettings.prefix ?? ''}$buildKey${envSettings.suffix ?? ''}';
+
+    return await projectClient.readDartDefineFile(filePath: envFilePath);
+  }
+
+  Future<String> _readReleaseNotes({required String projectVersion}) async {
+    if (!canUseChangelog) return '';
+
+    final allReleaseNotes = await projectClient.readReleaseNotes();
+    final releaseNotes = allReleaseNotes[projectVersion];
+    if (releaseNotes == null) {
+      Print.error('Not find Release Notes for "$projectVersion" project version');
+      exit(-1);
+    }
+    Print.spaceInfo('Release notes:\n$releaseNotes');
+    return releaseNotes;
+  }
+
+  Future<File> _build({
+    required String buildKey,
+    required BuildSettings buildSettings,
+    required String? env,
+  }) async {
+    if (buildSettings is ApkSettings) {
+      return await buildClient.buildApk(env: env, args: buildSettings.args);
+    } else if (buildSettings is AppBundleSettings) {
+      return await buildClient.buildAppBundle(env: env, args: buildSettings.args);
+    } else if (buildSettings is IpaSettings) {
+      return await buildClient.buildIpa(
+        env: env,
+        exportOptions: buildSettings.exportOptions,
+        args: buildSettings.args,
+      );
+    }
+    throw 'Not support $buildSettings';
+  }
+
+  Future<void> _buildAndUpload({
+    required PackageSettings settings,
+    required String buildKey,
+    required BuildSettings buildSettings,
+    required String? env,
+    required Directory outputDir,
+    required String releaseNotes,
+  }) async {
+    Print.workInfo('$buildKey.${buildSettings.type}: Building...');
+
+    final tmpBuildFile = await _build(
+      env: env,
+      buildKey: buildKey,
+      buildSettings: buildSettings,
+    );
+    final buildFile = await tmpBuildFile.rename('${outputDir.path}/${basename(tmpBuildFile.path)}');
+
+    Print.workInfo('$buildKey.${buildSettings.type}: Built!!!');
+
+    void distribuite(String name, Future<void> Function() task) {
       distributionQueue.add(() async {
-        Print.workInfo('$envFile ${build.name}: Uploading to Firebase...');
-        await distributionClient.uploadToFirebase(
+        Print.workInfo('$buildKey.${buildSettings.type}: Uploading to $name...');
+        await task();
+        Print.workInfo('$buildKey.${buildSettings.type}: Uploaded to $name!!!');
+      });
+    }
+
+    String getGoogleCredentials(String? credentials) {
+      if (credentials != null) return credentials;
+      final googleCredentials = settings.firebaseApiCredentials;
+      if (googleCredentials != null) return googleCredentials;
+      throw StateError(
+          'Place declare a global `googleCredentials` key or credentials key in distribution client option');
+    }
+
+    final firebaseCli = buildSettings.firebaseCli;
+    if (canDeployFirebase && firebaseCli != null) {
+      distribuite('Firebase - Cli', () async {
+        await distributionClient.uploadToFirebaseByCli(
           buildFile,
-          appId: firebase.appId,
-          groups: firebase.groups,
+          appId: firebaseCli.appId,
+          groups: firebaseCli.groups,
           releaseNotes: releaseNotes,
         );
-        Print.workInfo('$envFile ${build.name}: Uploaded to Firebase!!!');
       });
     }
-    final appleStore = build.appleStore;
-    if (canDeployAppleStore && appleStore != null) {
-      distributionQueue.add(() async {
-        Print.workInfo('$envFile ${build.name}: Uploading to AppleStore...');
-        await distributionClient.uploadToAppleStore(
+    final firebaseApi = buildSettings.firebaseApi;
+    if (canDeployFirebase && firebaseApi != null) {
+      distribuite('Firebase - Api', () async {
+        await distributionClient.uploadToFirebaseByApi(
           buildFile,
-          username: appleStore.username,
-          password: appleStore.password,
+          credentials: getGoogleCredentials(firebaseApi.credentials),
+          appId: firebaseApi.appId,
+          groups: firebaseApi.groups,
+          releaseNotes: releaseNotes,
         );
-        Print.workInfo('$envFile ${build.name}: Uploaded to AppleStore!!!');
       });
     }
-    final googleStore = build.googleStore;
+    final googleStore = buildSettings.googleStore;
     if (canDeployGoogleStore && googleStore != null) {
-      // TODO: Upload to play store
+      distribuite('Google Store', () async {
+        await distributionClient.uploadToGoogleStore(
+          buildFile,
+          credentials: getGoogleCredentials(googleStore.credentials),
+          packageName: googleStore.packageName,
+        );
+      });
+    }
+    final appleStoreApp = buildSettings.appleStoreApp;
+    if (canDeployAppleStore && appleStoreApp != null) {
+      distribuite('Apple Store - App', () async {
+        await distributionClient.uploadAppToAppleStore(
+          buildFile,
+          apiKeyId: appleStoreApp.apiKeyId,
+          apiIssuer: appleStoreApp.apiIssuer,
+          apiKey: appleStoreApp.apiKey,
+        );
+      });
     }
   }
-
-  String envName(String env) => env.replaceFirst('.env.', '');
 }
 
 class ToolBox {
@@ -247,7 +326,14 @@ class ToolBox {
     try {
       return checkedYamlDecode(
         await file.readAsString(),
-        (map) => from(map!),
+        (map) {
+          try {
+            return from(map!);
+          } catch (error) {
+            print(error);
+            rethrow;
+          }
+        },
         sourceUrl: Uri.file(file.path),
       );
     } on ParsedYamlException catch (error) {
