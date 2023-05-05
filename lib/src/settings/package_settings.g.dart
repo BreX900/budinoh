@@ -10,6 +10,10 @@ BuildGroupSettings _$BuildGroupSettingsFromJson(Map json) => $checkedCreate(
       'BuildGroupSettings',
       json,
       ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['apk', 'ipa', 'appbundle'],
+        );
         final val = BuildGroupSettings(
           apk: $checkedConvert(
               'apk', (v) => v == null ? null : ApkSettings.fromJson(v as Map)),
@@ -41,8 +45,15 @@ PackageSettings _$PackageSettingsFromJson(Map json) => $checkedCreate(
       'PackageSettings',
       json,
       ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['env', 'firebase_api_credentials', 'builds'],
+        );
         final val = PackageSettings(
-          defineEnv: $checkedConvert('define_env', (v) => v as String?),
+          env: $checkedConvert(
+              'env', (v) => v == null ? null : EnvSettings.fromJson(v as Map)),
+          firebaseApiCredentials:
+              $checkedConvert('firebase_api_credentials', (v) => v as String?),
           builds: $checkedConvert(
               'builds',
               (v) => (v as Map).map(
@@ -52,7 +63,7 @@ PackageSettings _$PackageSettingsFromJson(Map json) => $checkedCreate(
         );
         return val;
       },
-      fieldKeyMap: const {'defineEnv': 'define_env'},
+      fieldKeyMap: const {'firebaseApiCredentials': 'firebase_api_credentials'},
     );
 
 Map<String, dynamic> _$PackageSettingsToJson(PackageSettings instance) {
@@ -64,7 +75,8 @@ Map<String, dynamic> _$PackageSettingsToJson(PackageSettings instance) {
     }
   }
 
-  writeNotNull('define_env', instance.defineEnv);
+  writeNotNull('env', instance.env);
+  writeNotNull('firebase_api_credentials', instance.firebaseApiCredentials);
   val['builds'] = instance.builds;
   return val;
 }

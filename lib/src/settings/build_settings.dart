@@ -1,69 +1,82 @@
 import 'package:budinoh/src/settings/distribution_settings.dart';
+import 'package:budinoh/src/settings_serializable.dart';
 import 'package:budinoh/src/stringify.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 part 'build_settings.g.dart';
 
 abstract class BuildSettings with Stringify {
-  String get name;
+  final String? args;
+  String get type;
 
-  const BuildSettings();
+  const BuildSettings({
+    required this.args,
+  });
 
-  FirebaseSettings? get firebase => null;
+  FirebaseCliSettings? get firebaseCli => null;
+  FirebaseApiSettings? get firebaseApi => null;
   GoogleStoreSettings? get googleStore => null;
-  AppleStoreSettings? get appleStore => null;
+  AppleStoreAppSettings? get appleStoreApp => null;
 }
 
-@JsonSerializable()
+@SettingsSerializable()
 class ApkSettings extends BuildSettings {
   @override
-  final FirebaseSettings? firebase;
+  final FirebaseCliSettings? firebaseCli;
+  @override
+  final FirebaseApiSettings? firebaseApi;
 
   const ApkSettings({
-    required this.firebase,
-  }) : super();
+    required super.args,
+    required this.firebaseCli,
+    required this.firebaseApi,
+  });
 
   @override
-  String get name => 'Apk';
+  String get type => 'Apk';
 
   factory ApkSettings.fromJson(Map<dynamic, dynamic> map) => _$ApkSettingsFromJson(map);
   @override
   Map<String, dynamic> toJson() => _$ApkSettingsToJson(this);
 }
 
-@JsonSerializable()
+@SettingsSerializable()
 class AppBundleSettings extends BuildSettings {
   @override
   final GoogleStoreSettings? googleStore;
 
   const AppBundleSettings({
+    required super.args,
     required this.googleStore,
-  }) : super();
+  });
 
   @override
-  String get name => 'AppBundle';
+  String get type => 'AppBundle';
 
   factory AppBundleSettings.fromJson(Map<dynamic, dynamic> map) => _$AppBundleSettingsFromJson(map);
   @override
   Map<String, dynamic> toJson() => _$AppBundleSettingsToJson(this);
 }
 
-@JsonSerializable()
+@SettingsSerializable()
 class IpaSettings extends BuildSettings {
-  final String exportOptions;
+  final String? exportOptions;
   @override
-  final FirebaseSettings? firebase;
+  final FirebaseCliSettings? firebaseCli;
   @override
-  final AppleStoreSettings? appleStore;
+  final FirebaseApiSettings? firebaseApi;
+  @override
+  final AppleStoreAppSettings? appleStoreApp;
 
   const IpaSettings({
-    required this.firebase,
-    required this.appleStore,
+    required super.args,
     required this.exportOptions,
-  }) : super();
+    required this.firebaseCli,
+    required this.firebaseApi,
+    required this.appleStoreApp,
+  });
 
   @override
-  String get name => 'Ipa';
+  String get type => 'Ipa';
 
   factory IpaSettings.fromJson(Map<dynamic, dynamic> map) => _$IpaSettingsFromJson(map);
   @override

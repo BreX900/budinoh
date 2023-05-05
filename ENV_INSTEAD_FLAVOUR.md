@@ -140,3 +140,5 @@ fi
     PRODUCT_BUNDLE_IDENTIFIER = "$(IOS_BUNDLE_ID)";
     PROVISIONING_PROFILE_SPECIFIER = "$(IOS_PROVISIONING_PROFILE)";
 ```
+
+More info: https://medium.com/flutter-community/how-to-setup-dart-define-for-keys-and-secrets-on-android-and-ios-in-flutter-apps-4f28a10c4b6c
