@@ -24,7 +24,7 @@ class ProjectClient {
       line = line.trim();
       if (line.isEmpty) continue;
 
-      final versionMatch = RegExp(r'## (\d+\.\d+\.\d+)').firstMatch(line);
+      final versionMatch = RegExp(r'## (\d+\.\d+\.\d+.*)').firstMatch(line);
       if (versionMatch != null) {
         version = versionMatch.group(1)!;
         versions[version] = [];
@@ -39,6 +39,8 @@ class ProjectClient {
   Future<String> readVersion() async {
     final pubSpec = await PubSpec.load(Directory(_shell.path));
     final version = pubSpec.version!;
-    return '${version.major}.${version.minor}.${version.patch}';
+    final numbers = '${version.major}.${version.minor}.${version.patch}';
+    if (version.preRelease.isEmpty) return numbers;
+    return '$numbers-${version.preRelease.join('.')}';
   }
 }

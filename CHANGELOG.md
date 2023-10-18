@@ -1,6 +1,8 @@
 
-## 1.0.0
+## 1.0.1
+- fix: read versions with pre-release entry
 
+## 1.0.0
 - feat: Deploy builds to Firebase API via `firebase_api` option
 - feat: Deploy builds to Google Play Store via `google_store` option
 - feat: Deploy builds to Apple Store API via `apple_store_app` option
