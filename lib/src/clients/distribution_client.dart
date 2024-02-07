@@ -137,7 +137,7 @@ class DistributionClient {
           uploadMedia: Media(buildFile.openRead(), await buildFile.length()),
         );
 
-        appEdit = await api.edits.commit(packageName, appEdit.id!);
+        appEdit = await api.edits.commit(packageName, appEdit.id!, changesNotSentForReview: true);
       },
     );
   }
