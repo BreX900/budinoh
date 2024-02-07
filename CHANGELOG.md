@@ -1,4 +1,8 @@
 
+## 1.0.2
+
+- fix: Fixes flag appbundle as not sent for review
+
 ## 1.0.1
 - fix: read versions with pre-release entry
 

@@ -1,6 +1,6 @@
 name: budinoh
 description: Automatic build (apk/appbundle/ipa) and upload your project build to Firebase, PlayStore and AppStore.
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/BreX900/budinoh
 issue_tracker: https://github.com/BreX900/budinoh/issues
 
